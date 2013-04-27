@@ -72,8 +72,10 @@ def main(argv=None):
 	conn = imap.IMAPConnection(hostname,port,ssl,username,getpass.getpass())
 
 	# print all emails
-	for mail in imap.IMAPIterator(conn):
-		print mail
+	for mailbox in conn:
+		print mailbox
+		for mail in mailbox:
+			print mail
 
 def usage():
 	print >> sys.stderr, "Usage: arcane -h hostname [-p port] [-s] -u username"
@@ -85,6 +87,3 @@ def usage():
 
 if __name__  == "__main__":
 	sys.exit(main())
-
-
-
