@@ -1,9 +1,11 @@
 import sys
+import types
 import time
 import socket
 import imaplib
 import email
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 import gpgme
 from cStringIO import StringIO
@@ -85,6 +87,7 @@ class IMAPMailIterator:
 		typ, data = self.imap.uid('search', None, 'ALL')
 		self.numbers = data[0].split()
 		self.curnum = -1
+		self.seen = True
 
 	def __iter__(self):
 		return self
@@ -93,10 +96,8 @@ class IMAPMailIterator:
 		self.curnum += 1
 		try:
 			typ, data = self.imap.uid('fetch',self.numbers[self.curnum],'(RFC822)')
-			if "(\\Seen)" in data[0][0]:
-				self.seen = False
-			else:
-				self.seen = True
+			if data == None:
+				return StopIteration
 		except IndexError:
 			raise StopIteration
 		return IMAPMail(self.conn,self.mailbox,self.seen,self.numbers[self.curnum],data[0][1])
@@ -121,8 +122,20 @@ class IMAPMail:
 			return False
 
 	def encryptPGP(self,key):
+		# extract payload of old email
+		multipart = email.mime.multipart.MIMEMultipart("mixed")
+		if type(self.mail.get_payload()) == types.StringType:
+			multipart = MIMEText(str(self.mail.get_payload()))
+		else:
+			for payload in self.mail.get_payload():
+				multipart.attach(payload)
+		fp = StringIO()
+		g = Generator(fp, mangle_from_=False, maxheaderlen=60)
+		g.flatten(multipart)
+		text = fp.getvalue()
+
 		# encrypt payload of old email
-		plaintext = BytesIO(str(self.mail.get_payload()))
+		plaintext = BytesIO(text)
 		ciphertext = BytesIO()
 		ctx = gpgme.Context()
 		ctx.armor = True
@@ -157,7 +170,7 @@ class IMAPMail:
 
 	def store(self):
 		# delete old message
-		# self.imap.uid('store',self.uid,'+FLAGS','(\Deleted)')
+		self.imap.uid('store',self.uid,'+FLAGS','(\Deleted)')
 		self.imap.expunge()
 		# store message
 		fp = StringIO()
