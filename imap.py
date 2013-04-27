@@ -1,5 +1,6 @@
 import imaplib
 import email
+import time
 
 class IMAPConnection:
 	def __init__(self,address,port,ssl,username,password):
@@ -57,6 +58,7 @@ class IMAPMailbox:
 
 class IMAPMailIterator:
 	def __init__(self,conn,mailbox):
+		self.conn = conn
 		self.imap = conn.imap
 		self.mailbox = mailbox
 		self.mailboxentries = self.imap.select(self.mailbox)
@@ -69,33 +71,41 @@ class IMAPMailIterator:
 
 	def next(self):
 		self.curnum += 1
-		typ, data = self.imap.uid('fetch',self.numbers[self.curnum],'(RFC822)')
-		if typ != "OK":
+		try:
+			typ, data = self.imap.uid('fetch',self.numbers[self.curnum],'(RFC822)')
+		except IndexError:
 			raise StopIteration
-		return IMAPMail(self.mailbox,self.numbers[self.curnum],data[0][1])
+		return IMAPMail(self.conn,self.mailbox,self.numbers[self.curnum],data[0][1])
 
 
 class IMAPMail:
-	def __init__(self,mailbox,uid,mail):
+	def __init__(self,conn,mailbox,uid,mail):
+		self.imap = conn.imap
 		self.mailbox = mailbox
 		self.uid = uid
 		self.mail = email.message_from_string(mail)
-		self.subject = self.mail.get('Subject') or ""
-		self.sender = self.mail.get('From') or ""
-		self.receiver = self.mail.get('To') or ""
-		self.date = self.mail.get('Date') or ""
+		self.subject = self.mail['Subject'] or ""
+		self.sender = self.mail['From'] or ""
+		self.receiver = self.mail['To'] or ""
+		self.date = self.mail['Date'] or ""
 
 	def isEncrypted(self):
-		# TODO
-		return False
+		if self.mail.get_content_type() == "multipart/encrypted":
+			return True
+		else:
+			return False
 
 	def encryptPGP(self,key):
 		# TODO
 		return
 
 	def store(self):
-		# TODO
+		# TODO: check if mail has seen flag
+		self.imap.uid('store',self.uid,'+FLAGS','(\Deleted)')
+		self.imap.expunge()
+		print self.imap.append(self.mailbox,'(\Seen)','',str(self.mail))
+		
 		return
 
 	def __str__(self):
-		return self.sender + " " + self.subject + " " + self.date
+		return str(self.mail)
