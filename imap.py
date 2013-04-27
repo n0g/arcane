@@ -85,5 +85,17 @@ class IMAPMail:
 		self.receiver = self.mail.get('To') or ""
 		self.date = self.mail.get('Date') or ""
 
+	def isEncrypted(self):
+		# TODO
+		return False
+
+	def encryptPGP(self,key):
+		# TODO
+		return
+
+	def store(self):
+		# TODO
+		return
+
 	def __str__(self):
 		return self.sender + " " + self.subject + " " + self.date
