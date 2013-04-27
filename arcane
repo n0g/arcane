@@ -29,11 +29,12 @@ def main(argv=None):
 	port = 0
 	hostname = ""
 	username = ""
+	key = ""
 	ssl = False
 
 	# parse arguments
 	try:
-		optlist, args = getopt.getopt(sys.argv[1:],"h:p:su:",["hostname=", "port=","ssl","username="])
+		optlist, args = getopt.getopt(sys.argv[1:],"h:p:su:k:",["hostname=", "port=","ssl","username=","key="])
 	except getopt.GetoptError as err:
 		usage()
 		return 2
@@ -48,6 +49,8 @@ def main(argv=None):
 			ssl = True
 		elif o in ("-u","--username"):
 			username = a
+		elif o in ("-k","--key"):
+			key = a
 		else:
 			usage()
 			return 1
@@ -67,15 +70,26 @@ def main(argv=None):
 		print >> sys.stderr,"Authentication not possible without username\n"
 		usage()
 		return 1
+
+	if key == "":
+		print >> sys.stderr,"Encryption not possible without key identifier\n"
+		usage()
+		return 1
 		
 	# open connection
 	conn = imap.IMAPConnection(hostname,port,ssl,username,getpass.getpass())
 
-	# print all emails
+	# Encrypt all mails
 	for mailbox in conn:
 		print mailbox
 		for mail in mailbox:
-			print mail
+			if not mail.isEncrypted():
+				mail.encryptPGP(key)
+				mail.store()
+				sys.stdout.write('.')
+			else:
+				sys.stdout.write('X')
+			sys.stdout.flush()
 
 def usage():
 	print >> sys.stderr, "Usage: arcane -h hostname [-p port] [-s] -u username"
@@ -83,6 +97,7 @@ def usage():
 	print >> sys.stderr, "\t-p,--port\tOptional port number of IMAP4 service"
 	print >> sys.stderr, "\t-s,--ssl\tOptional SSL flag (changes default port to 993)"
 	print >> sys.stderr, "\t-u,--username\tUsername that should be used for authentication"
+	print >> sys.stderr, "\t-k,--key\tPublic key Identifier that will be used to encrypt the mails"
 	
 
 if __name__  == "__main__":
