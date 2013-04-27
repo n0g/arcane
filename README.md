@@ -6,6 +6,15 @@ On the negative side be aware that this only encrypts your mail body and not any
 
 **ATTENTION: BE CAREFUL THIS PROGRAM CAN DELETE YOUR EMAILS AND/OR DESTROY THEM BEYOND USE. MAKE A BACKUP BEFORE TRYING THIS ENCRYPTION TOOL! REALLY.**
 
+## Advantages ##
+* Encrypt all your Mails in case the server is hijacked or your server provider spies on you 
+* Is compatible with all mail clients that support PGP/MIME
+
+## Disadvantages ##
+* Does not encrypt metadata
+* Does not replace transport security
+* Depending on your mail client you may not be able to search your emails properly if they are encrypted
+
 ## Usage ##
     arcane -h hostname [-p port] [-s] -u username
         -h,--hostname	Hostname of IMAP4 compatible mailserver
