@@ -16,12 +16,72 @@ would also be nice.
 import sys
 import getopt
 import getpass
-import imaplib
+import imap
+
+DEFAULT_SSL_PORT = 993
+DEFAULT_PORT = 143
 
 def main(argv=None):
 	if argv==None:
 		argv = sys.argv
-	print "Hello, World!"
+
+	# Initial Arguments
+	port = 0
+	hostname = ""
+	username = ""
+	ssl = False
+
+	# parse arguments
+	try:
+		optlist, args = getopt.getopt(sys.argv[1:],"h:p:su:",["hostname=", "port=","ssl","username="])
+	except getopt.GetoptError as err:
+		usage()
+		return 2
+
+
+	for o, a in optlist:
+		if o in ("-h","--hostname"):
+			hostname = a
+		elif o in ("-p","--port"): 
+			port = int(a)
+		elif o in ("-s","--ssl"):
+			ssl = True
+		elif o in ("-u","--username"):
+			username = a
+		else:
+			usage()
+			return 1
+
+	if port == 0:
+		if ssl == True:
+			port = DEFAULT_SSL_PORT
+		else:
+			port = DEFAULT_PORT
+
+	if hostname == "":
+		print >> sys.stderr,"Connection not possible without hostname\n"
+		usage()
+		return 1
+
+	if username == "":
+		print >> sys.stderr,"Authentication not possible without username\n"
+		usage()
+		return 1
+		
+	# open connection
+	conn = imap.IMAPConnection(hostname,port,ssl,username,getpass.getpass())
+
+	# print all emails
+	for mail in imap.IMAPIterator(conn):
+		print mail
+
+def usage():
+	print >> sys.stderr, "Usage: arcane -h hostname [-p port] [-s] -u username"
+	print >> sys.stderr, "\t-h,--hostname\tHostname of IMAP4 compatible mailserver"
+	print >> sys.stderr, "\t-p,--port\tOptional port number of IMAP4 service"
+	print >> sys.stderr, "\t-s,--ssl\tOptional SSL flag (changes default port to 993)"
+	print >> sys.stderr, "\t-u,--username\tUsername that should be used for authentication"
+	
 
 if __name__  == "__main__":
 	sys.exit(main())
