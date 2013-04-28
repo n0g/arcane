@@ -38,7 +38,7 @@ import socket
 import imaplib
 import email
 from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
 from email.mime.application import MIMEApplication
 import gpgme
 from cStringIO import StringIO
@@ -171,22 +171,21 @@ class IMAPMail:
 		return
 
 	def _extractMIMEPayload(self,mail):
-		# in case the mail only consists of one message
-		# it is assumed that a message consisting of one part is a text
-		# (not html) message
+		# Email is non multipart
 		if type(mail.get_payload()) == types.StringType:
-			# TODO: copy content-type and content-transfer-encoding
-			mimemail = MIMEText(str(mail.get_payload()))
+			# duplicate content-type and charset
+			mimemail = MIMEBase(mail.get_content_maintype(),mail.get_content_subtype(),charset=mail.get_content_charset())
+			mimemail.set_payload(mail.get_payload())
+			# copy transfer encoding
 			if mail.has_key('Content-Transfer-Encoding'):
 				del mimemail['Content-Transfer-Encoding']
 				mimemail['Content-Transfer-Encoding'] = mail['Content-Transfer-Encoding']
-		# this gets easier if the message is a multipart message to
-		# begin with (because all content type and transfer encoding
-		# headers stay the same)
+		# for a multipart email just add every sub message
 		else:
 			mimemail = MIMEMultipart("mixed")
 			for payload in mail.get_payload():
 				mimemail.attach(payload)
+		# convert mime payload to string
 		fp = StringIO()
 		g = Generator(fp, mangle_from_=False, maxheaderlen=60)
 		g.flatten(mimemail)
