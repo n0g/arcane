@@ -46,11 +46,12 @@ def main(argv=None):
 	username = ""
 	key = ""
 	mailbox = ""
+	decrypt = False
 	ssl = False
 
 	# parse arguments
 	try:
-		optlist, args = getopt.getopt(sys.argv[1:],"h:p:su:k:m:",["hostname=", "port=","ssl","username=","key=","mailbox="])
+		optlist, args = getopt.getopt(sys.argv[1:],"h:p:su:k:m:d",["hostname=", "port=","ssl","username=","key=","mailbox=","decrypt"])
 	except getopt.GetoptError as err:
 		usage()
 		return 2
@@ -69,6 +70,8 @@ def main(argv=None):
 			key = a
 		elif o in ("-m","--mailbox"):
 			mailbox = a
+		elif o in ("-d","--decrypt"):
+			decrypt = True
 		else:
 			usage()
 			return 1
@@ -97,29 +100,38 @@ def main(argv=None):
 	# open connection
 	conn = imap.IMAPConnection(hostname,port,ssl,username,getpass.getpass())
 
-	# Encrypt all mails
+	# iterate over all mails and encrypt or decrypt them
 	for mbox in conn:
 		if mailbox != "" and not mailbox in mbox.mailbox:
 			continue
 		print mbox
 		for mail in mbox:
-			if not mail.isEncrypted():
-				mail.encryptPGP(key)
-				mail.store()
-				sys.stdout.write('.')
+			if decrypt == False:
+				if not mail.isEncrypted():
+					mail.encryptPGP(key)
+					mail.store()
+					sys.stdout.write('.')
+				else:
+					sys.stdout.write('X')
 			else:
-				sys.stdout.write('X')
+				if mail.isEncrypted():
+					mail.decryptPGP(key)
+					mail.store()
+					sys.stdout.write('.')
+				else:
+					sys.stdout.write('X')
 			sys.stdout.flush()
 		print "\n"
 
 def usage():
-	print >> sys.stderr, "Usage: arcane -h hostname [-p port] [-s] [-m mailbox] -u username"
+	print >> sys.stderr, "Usage: arcane -h hostname [-p port] [-s] [-m mailbox] -u username [-d]"
 	print >> sys.stderr, "\t-h,--hostname\tHostname of IMAP4 compatible mailserver"
 	print >> sys.stderr, "\t-p,--port\tOptional port number of IMAP4 service"
 	print >> sys.stderr, "\t-s,--ssl\tOptional SSL flag (changes default port to 993)"
 	print >> sys.stderr, "\t-u,--username\tUsername that should be used for authentication"
 	print >> sys.stderr, "\t-k,--key\tPublic key Identifier that will be used to encrypt the mails"
 	print >> sys.stderr, "\t-m,--mailbox\tOptional Mailbox that specifies which Mailbox should be encrypted"
+	print >> sys.stderr, "\t-d,--decrypt\tOptional argument for decryption (useful for key rollover)"
 	
 
 if __name__  == "__main__":
