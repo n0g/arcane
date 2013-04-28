@@ -170,6 +170,9 @@ class IMAPMail:
 		self.mail = self._generatePGPMIME(ciphertext.getvalue())
 		return
 
+	def decryptPGP(self,key):
+		return
+
 	def _extractMIMEPayload(self,mail):
 		# Email is non multipart
 		if type(mail.get_payload()) == types.StringType:
@@ -185,11 +188,8 @@ class IMAPMail:
 			mimemail = MIMEMultipart("mixed")
 			for payload in mail.get_payload():
 				mimemail.attach(payload)
-		# convert mime payload to string
-		fp = StringIO()
-		g = Generator(fp, mangle_from_=False, maxheaderlen=60)
-		g.flatten(mimemail)
-		return fp.getvalue()
+
+		return flattenMessage(mimemail)
 
 	def _generatePGPMIME(self,ciphertext):
 		# intialize multipart email and set preamble
@@ -222,15 +222,17 @@ class IMAPMail:
 		# delete old message
 		self.imap.uid('store',self.uid,'+FLAGS','(\Deleted)')
 		self.imap.expunge()
-		# convert message to string
-		fp = StringIO()
-		g = Generator(fp, mangle_from_=False, maxheaderlen=60)
-		g.flatten(self.mail)
 		# store message
 		if self.seen:
-			self.imap.append(self.mailbox,'(\Seen)','',fp.getvalue())
+			self.imap.append(self.mailbox,'(\Seen)','',flattenMessage(self.mail))
 		else:
-			self.imap.append(self.mailbox,'(\\Seen)','',fp.getvalue())
+			self.imap.append(self.mailbox,'(\\Seen)','',flattenMessage(self.mail))
 
 	def __str__(self):
 		return str(self.mail)
+
+def flattenMessage(mail):
+	fp = StringIO()
+	g = Generator(fp,mangle_from_=False, maxheaderlen=60)
+	g.flatten(mail)
+	return fp.getvalue()
