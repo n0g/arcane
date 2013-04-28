@@ -2,8 +2,6 @@
 
 Arcane is an encryption tool which connects to your IMAP account, authenticates as you and encrypts all unencrypted emails with your public GPG key. This way you can make sure you don't store any unencrypted mails on the mail server and you can still read them with any email client that supports PGP/MIME encryption.
 
-On the negative side be aware that this only encrypts your mail body and not any of your metadata. Sender, Recipients, Date and Subject all stay unencrypted!
-
 **ATTENTION: BE CAREFUL THIS PROGRAM ENCRYPTS ALL YOUR MAILS. WITHOUT THE PGP KEY YOUR EMAILS ARE LOST. MAKE BACKUPS!**
 
 ## Advantages ##
