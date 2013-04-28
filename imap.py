@@ -110,10 +110,6 @@ class IMAPMail:
 		self.seen = seen
 		self.uid = uid
 		self.mail = email.message_from_string(mail)
-		self.subject = self.mail['Subject'] or ""
-		self.sender = self.mail['From'] or ""
-		self.receiver = self.mail['To'] or ""
-		self.date = self.mail['Date'] or ""
 
 	def isEncrypted(self):
 		if self.mail.get_content_type() == "multipart/encrypted":
@@ -121,62 +117,82 @@ class IMAPMail:
 		else:
 			return False
 
-	def encryptPGP(self,key):
-		# extract payload of old email
-		multipart = email.mime.multipart.MIMEMultipart("mixed")
-		if type(self.mail.get_payload()) == types.StringType:
-			multipart = MIMEText(str(self.mail.get_payload()))
-		else:
-			for payload in self.mail.get_payload():
-				multipart.attach(payload)
-		fp = StringIO()
-		g = Generator(fp, mangle_from_=False, maxheaderlen=60)
-		g.flatten(multipart)
-		text = fp.getvalue()
 
-		# encrypt payload of old email
-		plaintext = BytesIO(text)
+	def encryptPGP(self,key):
+		# initialize variables for encryption
+		plaintext = BytesIO(_extractMIMEPayload(self.mail))
 		ciphertext = BytesIO()
 		ctx = gpgme.Context()
 		ctx.armor = True
+		# find public key
 		try:
 			recipient = ctx.get_key(key)
 		except:
 			print >> sys.stderr, "Couldn't find GPG Key"
 			sys.exit(1)
+		# encrypt data
 		ctx.encrypt([recipient], gpgme.ENCRYPT_ALWAYS_TRUST, plaintext, ciphertext)
 		ciphertext.seek(0)
+		# package encrypted data in valid PGP/MIME
+		self.mail = _generatePGPMIME(ciphertext.getvalue())
+		return
 
-		# generate new multipart encrypted mail
+	def _extractMIMEPayload(self,mail):
+		# in case the mail only consists of one message
+		# it is assumed that a message consisting of one part is a text
+		# (not html) message
+		if type(mail.get_payload()) == types.StringType:
+			mimemail = MIMEText(str(mail.get_payload()))
+			if mail.has_key('Content-Transfer-Encoding'):
+				mimemail['Content-Transfer-Encoding'] = mail['Content-Transfer-Encoding']
+		# this gets easier if the message is a multipart message to
+		# begin with (because all content type and transfer encoding
+		# headers stay the same)
+		else:
+			mimemail = MIMEMultipart("mixed")
+			for payload in mail.get_payload():
+				mimemail.attach(payload)
+		fp = StringIO()
+		g = Generator(fp, mangle_from_=False, maxheaderlen=60)
+		g.flatten(mimemail)
+		return fp.getvalue()
+
+	def _generatePGPMIME(self,ciphertext):
+		# intialize multipart email and set preamble
 		multipart = email.mime.multipart.MIMEMultipart("encrypted")
 		multipart.preamble = "This is an OpenPGP/MIME encrypted message (RFC 4880 and 3156)"
+
+		# first part is the Version Information
 		del multipart['MIME-Version']
 		pgpencrypted = email.mime.application.MIMEApplication("Version: 1","pgp-encrypted",email.encoders.encode_noop)
 		pgpencrypted.add_header("Content-Description","PGP/MIME version identification")
 		del pgpencrypted['MIME-Version']
-		octetstream = email.mime.application.MIMEApplication(ciphertext.getvalue(),"octet-stream",email.encoders.encode_noop,name="encrypted.asc")
+
+		# the second part contains the encrypted content
+		octetstream = email.mime.application.MIMEApplication(ciphertext,"octet-stream",email.encoders.encode_noop,name="encrypted.asc")
 		octetstream.add_header("Content-Disposition","inline",filename='encrypted.asc');
 		octetstream.add_header("Content-Description","OpenPGP encrypted message")
 		del octetstream['MIME-Version']
 		multipart.attach(pgpencrypted)
 		multipart.attach(octetstream)
+
+		# copy headers from original email
 		for key in self.mail.keys():
 			multipart[key] = self.mail[key]
 		multipart.set_param("protocol","application/pgp-encrypted");
 		del multipart['Content-Transfer-Encoding']
 		
-		self.mail = multipart
-		return
+		return multipart
 
 	def store(self):
 		# delete old message
 		self.imap.uid('store',self.uid,'+FLAGS','(\Deleted)')
 		self.imap.expunge()
-		# store message
+		# convert message to string
 		fp = StringIO()
 		g = Generator(fp, mangle_from_=False, maxheaderlen=60)
 		g.flatten(self.mail)
-		text = fp.getvalue()
+		# store message
 		if self.seen:
 			self.imap.append(self.mailbox,'(\Seen)','',fp.getvalue())
 		else:
