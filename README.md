@@ -4,7 +4,7 @@ Arcane is an encryption tool which connects to your IMAP account, authenticates 
 
 On the negative side be aware that this only encrypts your mail body and not any of your metadata. Sender, Recipients, Date and Subject all stay unencrypted!
 
-**ATTENTION: BE CAREFUL THIS PROGRAM COULD DELETE YOUR EMAILS OR DESTROY THEM BEYOND USE. MAKE A BACKUP BEFORE TRYING THIS ENCRYPTION TOOL! REALLY.**
+**ATTENTION: BE CAREFUL THIS PROGRAM ENCRYPTS ALL YOUR MAILS. WITHOUT THE PGP KEY YOUR EMAILS ARE LOST. MAKE BACKUPS!**
 
 ## Advantages ##
 * Encrypt all your Mails in case the server is hijacked or your server provider spies on you 
