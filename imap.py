@@ -120,7 +120,7 @@ class IMAPMail:
 
 	def encryptPGP(self,key):
 		# initialize variables for encryption
-		plaintext = BytesIO(_extractMIMEPayload(self.mail))
+		plaintext = BytesIO(self._extractMIMEPayload(self.mail))
 		ciphertext = BytesIO()
 		ctx = gpgme.Context()
 		ctx.armor = True
@@ -134,7 +134,7 @@ class IMAPMail:
 		ctx.encrypt([recipient], gpgme.ENCRYPT_ALWAYS_TRUST, plaintext, ciphertext)
 		ciphertext.seek(0)
 		# package encrypted data in valid PGP/MIME
-		self.mail = _generatePGPMIME(ciphertext.getvalue())
+		self.mail = self._generatePGPMIME(ciphertext.getvalue())
 		return
 
 	def _extractMIMEPayload(self,mail):
@@ -142,8 +142,10 @@ class IMAPMail:
 		# it is assumed that a message consisting of one part is a text
 		# (not html) message
 		if type(mail.get_payload()) == types.StringType:
+			# TODO: copy content-type and content-transfer-encoding
 			mimemail = MIMEText(str(mail.get_payload()))
 			if mail.has_key('Content-Transfer-Encoding'):
+				del mimemail['Content-Transfer-Encoding']
 				mimemail['Content-Transfer-Encoding'] = mail['Content-Transfer-Encoding']
 		# this gets easier if the message is a multipart message to
 		# begin with (because all content type and transfer encoding
