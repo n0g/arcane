@@ -30,7 +30,13 @@ On the negative side be aware that this only encrypts your mail body and not any
         -s,--ssl	Optional SSL flag (changes default port to 993)
         -u,--username	Username that should be used for authentication
         -k,--key	Public key Identifier that will be used to encrypt the mails
+        -m,--mailbox	Optional Mailbox argument which specifies which mailbox should be encrypted
 
 
 ## Example ##
-     ./arcane --hostname mail.example.com --port 993 --ssl --username n0g --key 77FA1F54
+Encrypt all emails on an SSL IMAP compatible mailserver for the user n0g
+with the public pgp key 77FA1F54
+     ./arcane --hostname mail.example.com --ssl --username n0g --key 77FA1F54
+
+Encrypt only the 'office' mailbox on an SSL IMAP compatible mailserver
+     ./arcane --hostname mail.example.com --ssl --mailbox office --username n0g --key 77FA1F54
