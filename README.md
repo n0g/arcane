@@ -20,6 +20,10 @@ On the negative side be aware that this only encrypts your mail body and not any
 * imaplib (Included in the Python Standard Library)
 * python-gpgme https://launchpad.net/pygpgme (Should be available in Debian and Ubuntu repositories)
 
+## Known Issues ##
+* read/unread state is not preserved (all emails are displayed as read after using this tool)
+* charset of plaintext emails is not preserved
+
 ## Usage ##
     arcane -h hostname [-p port] [-s] -u username
         -h,--hostname	Hostname of IMAP4 compatible mailserver
