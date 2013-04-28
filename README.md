@@ -22,7 +22,6 @@ On the negative side be aware that this only encrypts your mail body and not any
 
 ## Known Issues ##
 * read/unread state is not preserved (all emails are displayed as read after using this tool)
-* charset of plaintext emails is not preserved
 
 ## Usage ##
     arcane -h hostname [-p port] [-s] -u username
