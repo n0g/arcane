@@ -110,6 +110,7 @@ def main(argv=None):
 			else:
 				sys.stdout.write('X')
 			sys.stdout.flush()
+		print "\n"
 
 def usage():
 	print >> sys.stderr, "Usage: arcane -h hostname [-p port] [-s] [-m mailbox] -u username"
