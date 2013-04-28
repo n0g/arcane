@@ -36,7 +36,9 @@ On the negative side be aware that this only encrypts your mail body and not any
 ## Example ##
 Encrypt all emails on an SSL IMAP compatible mailserver for the user n0g
 with the public pgp key 77FA1F54
+
      ./arcane --hostname mail.example.com --ssl --username n0g --key 77FA1F54
 
 Encrypt only the 'office' mailbox on an SSL IMAP compatible mailserver
+
      ./arcane --hostname mail.example.com --ssl --mailbox office --username n0g --key 77FA1F54
