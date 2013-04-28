@@ -16,6 +16,10 @@ On the negative side be aware that this only encrypts your mail body and not any
 * Depending on your mail client you may not be able to search your emails properly if they are encrypted
 * The popular Enigmail Plugin for Thunderbird seems to go haywire if you encrypt a few thousand emails (try disabling autmatic decryption)
 
+## Dependancies ##
+* imaplib (Included in the Python Standard Library)
+* python-gpgme https://launchpad.net/pygpgme (Should be available in Debian and Ubuntu repositories)
+
 ## Usage ##
     arcane -h hostname [-p port] [-s] -u username
         -h,--hostname	Hostname of IMAP4 compatible mailserver
