@@ -68,7 +68,7 @@ def main(argv=None):
 
 	# check if already encrypted
 	if email_obj.get_content_type() == "multipart/encrypted":
-		print email_data
+		print >> sys.stderr, "Already encrypted. Won't encrypt twice."
 		return 1
 
 	# encrypt mail
