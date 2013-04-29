@@ -97,8 +97,13 @@ def main(argv=None):
 		usage()
 		return 1
 		
+	# fetch passwords from user
+	imap_password = getpass.getpass("IMAP4 Password: ")
+	if decrypt == True:
+		gpg_passphrase = getpass.getpass("GPG Passphrase: ")
+
 	# open connection
-	conn = imap.IMAPConnection(hostname,port,ssl,username,getpass.getpass("IMAP4 Password: "))
+	conn = imap.IMAPConnection(hostname,port,ssl,username,imap_password)
 
 	# iterate over all mails and encrypt or decrypt them
 	for mbox in conn:
@@ -115,7 +120,7 @@ def main(argv=None):
 					sys.stdout.write('X')
 			else:
 				if mail.isEncrypted():
-					mail.decryptPGP(key)
+					mail.decryptPGP(key,gpg_passphrase)
 					mail.store()
 					sys.stdout.write('.')
 				else:
