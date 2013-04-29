@@ -31,6 +31,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 """
+import os
 import sys
 import types
 import time
@@ -217,33 +218,22 @@ class IMAPMail:
 		return multipart
 
 	def passphrase_cb(self,uid_hint, passphrase_info, prev_was_bad, fd):
-		if prev_was_bad:
-			print "You got it wrong again!"
-		passwd = getpass.getpass(uid_hint + ": ")
-		passwd += "\n"
-		os.write(fd, str(passwd))
-		os.flush(fd)
+		os.write(fd,self.passphrase)
+		os.write(fd,'\n')
 
-	def decryptPGP(self,key):
+	def decryptPGP(self,key,passphrase):
 		# extract pgp message
 		ciphertext = BytesIO(str(self._extractPGPMessage()))
 		ctx = gpgme.Context()
 		ctx.armor = True
 
-
-		ctx.passphrase_cb = self.passphrase_cb
-
-		# find public key
-		try:
-			recipient = ctx.get_key(key)
-		except:
-			print >> sys.stderr, "Couldn't find GPG Key"
-			sys.exit(1)
-
 		# decrypt
+		self.passphrase = passphrase
+		ctx.passphrase_cb = self.passphrase_cb
 		plaintext = BytesIO()
 		ctx.decrypt(ciphertext, plaintext)
 		print plaintext.getvalue()
+		sys.stdout.flush()
 
 		# package message again
 		return
