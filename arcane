@@ -32,6 +32,7 @@ import sys
 import getopt
 import getpass
 import imap
+from util import Util
 from gpg import GPGDecryption
 from gpg import GPGEncryption
 
@@ -116,14 +117,14 @@ def main(argv=None):
 			if decrypt == False:
 				if not mail.isEncrypted():
 					mail.mail = GPGEncryption().encryptPGP(mail.mail,key)
-					# mail.store()
+					mail.store()
 					sys.stdout.write('.')
 				else:
 					sys.stdout.write('X')
 			else:
 				if mail.isEncrypted():
 					mail.mail = GPGDecryption().decryptPGP(mail.mail,key,gpg_passphrase)
-					# mail.store()
+					mail.store()
 					sys.stdout.write('.')
 				else:
 					sys.stdout.write('X')

@@ -31,7 +31,7 @@ import sys
 import socket
 import imaplib
 import email
-import util
+from util import Util
 
 class IMAPConnection:
 	def __init__(self,address,port,ssl,username,password):

@@ -25,9 +25,10 @@ THE SOFTWARE.
 import os
 import sys
 import types
-import util
+from util import Util
 from io import BytesIO
 import gpgme
+import email
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email.mime.application import MIMEApplication
@@ -111,12 +112,20 @@ class GPGDecryption:
 		self.passphrase = passphrase
 		ctx.passphrase_cb = self.passphrase_cb
 		plaintext = BytesIO()
-		ctx.decrypt(ciphertext, plaintext)
-		print plaintext.getvalue()
-		sys.stdout.flush()
-
+		try:
+			ctx.decrypt(ciphertext, plaintext)
+		except Gpgme.error as err:
+			print >> sys.stderr, "Couldn't decrypt data, bad passphrase?"
+			sys.exit(1)
+		
 		# package message again
-		return mail
+		decryptedmail = email.message_from_string(plaintext.getvalue())
+		# copy headers from original email
+		for key in mail.keys():
+			if key == "Content-Type" or key == "Content-Transfer-Encoding":
+				continue
+			decryptedmail[key] = mail[key]
+		return decryptedmail
 
 	def _extractPGPMessage(self,mail):
 		# TODO: replace error message with exceptions
