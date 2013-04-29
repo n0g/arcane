@@ -32,6 +32,8 @@ import sys
 import getopt
 import getpass
 import imap
+from gpg import GPGDecryption
+from gpg import GPGEncryption
 
 DEFAULT_SSL_PORT = 993
 DEFAULT_PORT = 143
@@ -113,15 +115,15 @@ def main(argv=None):
 		for mail in mbox:
 			if decrypt == False:
 				if not mail.isEncrypted():
-					mail.encryptPGP(key)
-					mail.store()
+					mail.mail = GPGEncryption().encryptPGP(mail.mail,key)
+					# mail.store()
 					sys.stdout.write('.')
 				else:
 					sys.stdout.write('X')
 			else:
 				if mail.isEncrypted():
-					mail.decryptPGP(key,gpg_passphrase)
-					mail.store()
+					mail.mail = GPGDecryption().decryptPGP(mail.mail,key,gpg_passphrase)
+					# mail.store()
 					sys.stdout.write('.')
 				else:
 					sys.stdout.write('X')
