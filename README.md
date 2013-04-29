@@ -1,27 +1,50 @@
 # arcane #
 
-Arcane is an encryption tool which connects to your IMAP account, authenticates as you and encrypts all unencrypted emails with your public GPG key. This way you can make sure you don't store any unencrypted mails on the mail server and you can still read them with any email client that supports PGP/MIME encryption.
+Arcane is a set of tools which allows you to encrypt all your existing
+unencrypted mails and all your new incoming mail with a GPG key so that
+only you can read them.
 
-**ATTENTION: BE CAREFUL THIS PROGRAM ENCRYPTS ALL YOUR MAILS. WITHOUT THE PGP KEY YOUR EMAILS ARE LOST. MAKE BACKUPS!**
+## Why do I need this? ##
 
-## Advantages ##
-* Encrypt all your Mails in case the server is hijacked or your server provider spies on you 
-* Is compatible with all mail clients that support PGP/MIME
+Many email providers store your emails for you on their servers, so
+that you can read them anywhere. This also means that your provider,
+anyone who hacks the server and the police (in case the server is
+seized) can read your private emails.
 
-## Disadvantages ##
-* Does not encrypt metadata
-* Does not replace transport security
-* Depending on your mail client you may not be able to search your emails properly if they are encrypted
-* The popular Enigmail Plugin for Thunderbird seems to go haywire if you encrypt a few thousand emails (try disabling autmatic decryption)
+If all your emails are GPG encrypted, only you can read them because
+only you have access to your secret GPG key.
 
-## Dependancies ##
+## What could go wrong? ##
+
+* If you lose your secret GPG key you can not decrypt your emails anymore.
+Your emails will be lost. Therefore make a backup of your secret GPG key (i.e. print it).
+* After encrypting your emails you will (probably) not be able search
+the content of your emails  (because they are encrypted). Searching
+for sender or subject should still work.
+* The metadata of your emails (sender,subject,date) will not be encrypted.
+* Your emails will not be more secure during transit (because they are encyrpted
+after arriving at the destination). Tell your friends and colleagues to
+encrypt their mails _before_ sending them.
+
+## Install ##
+
+### Dependancies ###
 * imaplib (Included in the Python Standard Library)
 * python-gpgme https://launchpad.net/pygpgme (Should be available in Debian and Ubuntu repositories)
 
-## Known Issues ##
-* read/unread state is not preserved (all emails are displayed as read after using this tool)
+### Debian ###
+    # aptitude install python python-gpgme
+    # mkdir -p /usr/local/lib && cd /usr/local/lib
+    # git clone https://github.com/n0g/arcane.git
+    # cd ../bin 
+    # ln -s ../lib/arcane/arcane
+    # ln -s ../lib/arcane/arcane-encrypt-mail
 
-## Usage ##
+Afterwards you should be able to call 'arcane' and 'arcane-encrypt-mail'
+and get a usage output.
+## Quick Start ##
+
+### Usage ###
     arcane -h hostname [-p port] [-s] -u username [-d] -k identifier
         -h,--hostname	Hostname of IMAP4 compatible mailserver
         -p,--port	Optional port number of IMAP4 service
@@ -32,7 +55,7 @@ Arcane is an encryption tool which connects to your IMAP account, authenticates 
         -d,--decrypt	Optional argument for decryption (useful for key rollover)
 
 
-## Example ##
+### Examples ###
 Encrypt all emails on an SSL IMAP compatible mailserver for the user n0g
 with the public pgp key 77FA1F54
 
@@ -62,3 +85,6 @@ Example .procmailrc File if you want to encrypt all incoming mails with procmail
     # default rule
     :0
     $DEFAULT
+
+## Known Issues ##
+* read/unread state is not preserved (all emails are displayed as read after using this tool)
