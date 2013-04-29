@@ -4,10 +4,6 @@ This Module allows easy Abstraction of an IMAP Connection, Mailboxes and
 E-Mails. It provides Iterators so that we can easily iterate over all
 E-Mails.
 
-The E-Mail class also contains code for the extraction, encryption and
-repackaging of Payload. Which should probably be moved to a different
-module.
-
 The MIT License (MIT)
 
 Copyright (c) 2013 Matthias Fassl <mf@n0g.at>
@@ -31,24 +27,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 """
-import os
 import sys
-import types
-import time
 import socket
-import getpass
 import imaplib
 import email
-from email.mime.multipart import MIMEMultipart
-from email.mime.base import MIMEBase
-from email.mime.application import MIMEApplication
-import gpgme
-from cStringIO import StringIO
-from email.generator import Generator
-try:
-    from io import BytesIO
-except ImportError:
-    from StringIO import StringIO as BytesIO
+import util
 
 class IMAPConnection:
 	def __init__(self,address,port,ssl,username,password):
@@ -152,126 +135,16 @@ class IMAPMail:
 		else:
 			return False
 
-
-	def encryptPGP(self,key):
-		# initialize variables for encryption
-		plaintext = BytesIO(self._extractMIMEPayload(self.mail))
-		ciphertext = BytesIO()
-		ctx = gpgme.Context()
-		ctx.armor = True
-		# find public key
-		try:
-			recipient = ctx.get_key(key)
-		except:
-			print >> sys.stderr, "Couldn't find GPG Key"
-			sys.exit(1)
-		# encrypt data
-		ctx.encrypt([recipient], gpgme.ENCRYPT_ALWAYS_TRUST, plaintext, ciphertext)
-		ciphertext.seek(0)
-		# package encrypted data in valid PGP/MIME
-		self.mail = self._generatePGPMIME(ciphertext.getvalue())
-		return
-
-	def _extractMIMEPayload(self,mail):
-		# Email is non multipart
-		if type(mail.get_payload()) == types.StringType:
-			# duplicate content-type and charset
-			mimemail = MIMEBase(mail.get_content_maintype(),mail.get_content_subtype(),charset=mail.get_content_charset())
-			mimemail.set_payload(mail.get_payload())
-			# copy transfer encoding
-			if mail.has_key('Content-Transfer-Encoding'):
-				del mimemail['Content-Transfer-Encoding']
-				mimemail['Content-Transfer-Encoding'] = mail['Content-Transfer-Encoding']
-		# for a multipart email just add every sub message
-		else:
-			mimemail = MIMEMultipart("mixed")
-			for payload in mail.get_payload():
-				mimemail.attach(payload)
-
-		return flattenMessage(mimemail)
-
-	def _generatePGPMIME(self,ciphertext):
-		# intialize multipart email and set preamble
-		multipart = email.mime.multipart.MIMEMultipart("encrypted")
-		multipart.preamble = "This is an OpenPGP/MIME encrypted message (RFC 4880 and 3156)"
-
-		# first part is the Version Information
-		del multipart['MIME-Version']
-		pgpencrypted = email.mime.application.MIMEApplication("Version: 1","pgp-encrypted",email.encoders.encode_noop)
-		pgpencrypted.add_header("Content-Description","PGP/MIME version identification")
-		del pgpencrypted['MIME-Version']
-
-		# the second part contains the encrypted content
-		octetstream = email.mime.application.MIMEApplication(ciphertext,"octet-stream",email.encoders.encode_noop,name="encrypted.asc")
-		octetstream.add_header("Content-Disposition","inline",filename='encrypted.asc');
-		octetstream.add_header("Content-Description","OpenPGP encrypted message")
-		del octetstream['MIME-Version']
-		multipart.attach(pgpencrypted)
-		multipart.attach(octetstream)
-
-		# copy headers from original email
-		for key in self.mail.keys():
-			multipart[key] = self.mail[key]
-		multipart.set_param("protocol","application/pgp-encrypted");
-		del multipart['Content-Transfer-Encoding']
-		
-		return multipart
-
-	def passphrase_cb(self,uid_hint, passphrase_info, prev_was_bad, fd):
-		os.write(fd,self.passphrase)
-		os.write(fd,'\n')
-
-	def decryptPGP(self,key,passphrase):
-		# extract pgp message
-		ciphertext = BytesIO(str(self._extractPGPMessage()))
-		ctx = gpgme.Context()
-		ctx.armor = True
-
-		# decrypt
-		self.passphrase = passphrase
-		ctx.passphrase_cb = self.passphrase_cb
-		plaintext = BytesIO()
-		ctx.decrypt(ciphertext, plaintext)
-		print plaintext.getvalue()
-		sys.stdout.flush()
-
-		# package message again
-		return
-
-	def _extractPGPMessage(self):
-		# TODO: replace error message with exceptions
-		encrypted = ""
-		submessages = self.mail.get_payload()
-		for msg in submessages:
-			if msg.get_content_subtype() == "pgp-encrypted":
-				# check version information
-				if not msg.get_payload() == "Version: 1":
-					print >> sys.stderr, "Couldn't decrypt message, wrong  PGP Version information"
-					return
-			if msg.get_content_subtype() == "octet-stream":
-				encrypted = msg.get_payload()
-
-		if encrypted == "":
-			print >> sys.stderr, "Couldn't decrypt message, no data found"
-			return
-
-		return encrypted
-
 	def store(self):
 		# delete old message
 		self.imap.uid('store',self.uid,'+FLAGS','(\Deleted)')
 		self.imap.expunge()
 		# store message
 		if self.seen:
-			self.imap.append(self.mailbox,'(\Seen)','',flattenMessage(self.mail))
+			self.imap.append(self.mailbox,'(\Seen)','',Util.flattenMessage(self.mail))
 		else:
-			self.imap.append(self.mailbox,'(\\Seen)','',flattenMessage(self.mail))
+			self.imap.append(self.mailbox,'(\\Seen)','',Util.flattenMessage(self.mail))
 
 	def __str__(self):
 		return str(self.mail)
 
-def flattenMessage(mail):
-	fp = StringIO()
-	g = Generator(fp,mangle_from_=False, maxheaderlen=60)
-	g.flatten(mail)
-	return fp.getvalue()
