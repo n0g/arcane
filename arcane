@@ -132,7 +132,7 @@ def main(argv=None):
 		print "\n"
 
 def usage():
-	print >> sys.stderr, "Usage: arcane -h hostname [-p port] [-s] [-m mailbox] -u username [-d]"
+	print >> sys.stderr, "Usage: arcane -h hostname [-p port] [-s] [-m mailbox] -u username [-d] -k identifier"
 	print >> sys.stderr, "\t-h,--hostname\tHostname of IMAP4 compatible mailserver"
 	print >> sys.stderr, "\t-p,--port\tOptional port number of IMAP4 service"
 	print >> sys.stderr, "\t-s,--ssl\tOptional SSL flag (changes default port to 993)"

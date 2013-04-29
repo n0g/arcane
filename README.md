@@ -22,7 +22,7 @@ Arcane is an encryption tool which connects to your IMAP account, authenticates 
 * read/unread state is not preserved (all emails are displayed as read after using this tool)
 
 ## Usage ##
-    arcane -h hostname [-p port] [-s] -u username [-d]
+    arcane -h hostname [-p port] [-s] -u username [-d] -k identifier
         -h,--hostname	Hostname of IMAP4 compatible mailserver
         -p,--port	Optional port number of IMAP4 service
         -s,--ssl	Optional SSL flag (changes default port to 993)
