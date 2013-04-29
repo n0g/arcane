@@ -29,6 +29,7 @@ THE SOFTWARE.
 
 import sys
 import getopt
+import email
 from util import Util
 from gpg import GPGDecryption
 from gpg import GPGEncryption
@@ -38,10 +39,35 @@ def main(argv=None):
 		argv = sys.argv
 
 	# parse option
+	key = ""
+	try:
+		optlist, args = getopt.getopt(sys.argv[1:],"k:",["key="])
+	except getopt.GetoptError as err:
+		usage()
+		return 2
+
+	for o, a in optlist:
+		if o in ("-k","--key"):
+			key = a
+		else:
+			usage()
+			return 1
+	
+	if key == "":
+		print >> sys.stderr, "Encryption not possible without key identifier\n"
+		usage()
+		return 1
 
 	# read email from stdin
+	email_lines = sys.stdin.readlines()
+	email_data = ''.join(email_lines)
+	email_obj = email.message_from_string(email_data)
 
 	# encrypt mail
+	email_encrypted = GPGEncryption().encryptPGP(email_obj,key)
+
+	# print mail
+	print Util.flattenMessage(email_encrypted)
 
 def usage():
 	print >> sys.stderr, "Usage: arcane-encrypt-mail -k Key-Identifier"
