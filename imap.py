@@ -35,6 +35,7 @@ import sys
 import types
 import time
 import socket
+import getpass
 import imaplib
 import email
 from email.mime.multipart import MIMEMultipart
@@ -170,9 +171,6 @@ class IMAPMail:
 		self.mail = self._generatePGPMIME(ciphertext.getvalue())
 		return
 
-	def decryptPGP(self,key):
-		return
-
 	def _extractMIMEPayload(self,mail):
 		# Email is non multipart
 		if type(mail.get_payload()) == types.StringType:
@@ -217,6 +215,57 @@ class IMAPMail:
 		del multipart['Content-Transfer-Encoding']
 		
 		return multipart
+
+	def passphrase_cb(self,uid_hint, passphrase_info, prev_was_bad, fd):
+		if prev_was_bad:
+			print "You got it wrong again!"
+		passwd = getpass.getpass(uid_hint + ": ")
+		passwd += "\n"
+		os.write(fd, str(passwd))
+		os.flush(fd)
+
+	def decryptPGP(self,key):
+		# extract pgp message
+		ciphertext = BytesIO(str(self._extractPGPMessage()))
+		ctx = gpgme.Context()
+		ctx.armor = True
+
+
+		ctx.passphrase_cb = self.passphrase_cb
+
+		# find public key
+		try:
+			recipient = ctx.get_key(key)
+		except:
+			print >> sys.stderr, "Couldn't find GPG Key"
+			sys.exit(1)
+
+		# decrypt
+		plaintext = BytesIO()
+		ctx.decrypt(ciphertext, plaintext)
+		print plaintext.getvalue()
+
+		# package message again
+		return
+
+	def _extractPGPMessage(self):
+		# TODO: replace error message with exceptions
+		encrypted = ""
+		submessages = self.mail.get_payload()
+		for msg in submessages:
+			if msg.get_content_subtype() == "pgp-encrypted":
+				# check version information
+				if not msg.get_payload() == "Version: 1":
+					print >> sys.stderr, "Couldn't decrypt message, wrong  PGP Version information"
+					return
+			if msg.get_content_subtype() == "octet-stream":
+				encrypted = msg.get_payload()
+
+		if encrypted == "":
+			print >> sys.stderr, "Couldn't decrypt message, no data found"
+			return
+
+		return encrypted
 
 	def store(self):
 		# delete old message
