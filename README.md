@@ -43,3 +43,22 @@ Encrypt only the 'office' mailbox on an SSL IMAP compatible mailserver
 
 
      ./arcane --hostname mail.example.com --ssl --mailbox office --username n0g --key 77FA1F54
+
+Example .procmailrc File if you want to encrypt all incoming mails with procmail
+
+
+    DEFAULT=$HOME/Maildir
+    SHELL=/bin/bash
+    PATH=/usr/local/bin:/usr/bin
+
+    # encryption
+    :0 fw
+    * <300000
+    | arcane-encrypt-mail --key 77FA1F54
+
+    # your bunch of filter rules
+    # ...
+
+    # default rule
+    :0
+    $DEFAULT
