@@ -4,6 +4,9 @@
 Reads an E-Mail from Standard Input, encrypts it with given GPG Key and
 writes encrypted E-Mail to Standard Output
 
+If an E-Mail is already encrypted, this tool will pass it through to
+Stdout without any manipulation.
+
 The MIT License (MIT)
 
 Copyright (c) 2013 Matthias Fassl <mf@n0g.at>
@@ -62,6 +65,11 @@ def main(argv=None):
 	email_lines = sys.stdin.readlines()
 	email_data = ''.join(email_lines)
 	email_obj = email.message_from_string(email_data)
+
+	# check if already encrypted
+	if email_obj.get_content_type() == "multipart/encrypted":
+		print email_data
+		return 1
 
 	# encrypt mail
 	email_encrypted = GPGEncryption().encryptPGP(email_obj,key)
