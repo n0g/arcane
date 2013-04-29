@@ -98,7 +98,7 @@ def main(argv=None):
 		return 1
 		
 	# open connection
-	conn = imap.IMAPConnection(hostname,port,ssl,username,getpass.getpass())
+	conn = imap.IMAPConnection(hostname,port,ssl,username,getpass.getpass("IMAP4 Password: "))
 
 	# iterate over all mails and encrypt or decrypt them
 	for mbox in conn:
