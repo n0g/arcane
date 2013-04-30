@@ -48,6 +48,8 @@ and get a usage output.
 ### Generate GPG Key ###
 To generate a new GPG key the following command will guide you through
 the key generation process:
+
+
    $ gpg --gen-key
 
 You will need to use an RSA key for encryption (do not choose any option
@@ -56,6 +58,8 @@ bit RSA keys are considered insecure.
 
 After the generation process your keypair should be visible with the
 following command:
+
+
    $ gpg --list-secret-keys
 
 
@@ -65,20 +69,28 @@ have access to your procmail configuration, then you can skip to
 'Encrypting Existing Mails')
 
 Export your key into a .pub file:
+
+
     $ gpg --export --armor 77FA1F54 > robin-jankins.pub
 
 
 Copy the public key to your mailserver:
+
+
     $ scp robin-jankins.pub robin.jankins@mail.example.com:~/
 
 
 Import the public key to your keyring on the mailserver:
+
+
    $ gpg --import robin-jankins.pub
 
 
 ### Create procmail Configuration ###
 Your procmail configuration file probably lies at '~/.procmailrc'. To
 encrypt all your incoming mail you will need to add a rule at the top:
+
+
     # encryption
     :0 fw
     * <300000
@@ -104,6 +116,8 @@ Your GPG key identifier should be in the list you get after executing
 'gpg --list-secret-keys'.
 
 Now you have all the details for starting arcane:
+
+
     $ arcane -h mail.example.com -s -u robin.jankins -k 77FA1F54
 
 ## Quick Start ##
