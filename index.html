@@ -1,71 +1,145 @@
 <!DOCTYPE html>
 <html>
+
   <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <title>Arcane by n0g</title>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Arcane : Don't let them *read* your mail. Encrypt it now." />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Arcane</title>
   </head>
 
   <body>
-    <div id="container">
-      <div class="inner">
 
-        <header>
-          <h1>Arcane</h1>
-          <h2>Encryption tool which connects to your IMAP account and encrypts all your unencrypted mails with your public PGP Key.</h2>
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/n0g/arcane">View on GitHub</a>
+
+          <h1 id="project_title">Arcane</h1>
+          <h2 id="project_tagline">Don't let them *read* your mail. Encrypt it now.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/n0g/arcane/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/n0g/arcane/tarball/master">Download this project as a tar.gz file</a>
+            </section>
         </header>
+    </div>
 
-        <section id="downloads" class="clearfix">
-          <a href="https://github.com/n0g/arcane/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
-          <a href="https://github.com/n0g/arcane/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
-          <a href="https://github.com/n0g/arcane" id="view-on-github" class="button"><span>View on GitHub</span></a>
-        </section>
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <p>Arcane is a set of tools which allows you to encrypt all your existing
+unencrypted mails and all your new incoming mail with a GPG key so that
+only you can read them.</p>
 
-        <hr>
+<h2>Why do I need this?</h2>
 
-        <section id="main_content">
-          <h3>Welcome to GitHub Pages.</h3>
+<p>Many email providers store your emails for you on their servers, so
+that you can read them anywhere. This also means that your provider,
+anyone who hacks the server and the police (in case the server is
+seized) can read your private emails.</p>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+<p>If all your emails are GPG encrypted, only you can read them because
+only you have access to your secret GPG key.</p>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
+<h2>What could go wrong?</h2>
+
+<ul>
+<li>If you lose your secret GPG key you can not decrypt your emails anymore.
+Your emails will be lost. Therefore make a backup of your secret GPG key (i.e. print it).</li>
+<li>After encrypting your emails you will (probably) not be able search
+the content of your emails  (because they are encrypted). Searching
+for sender or subject should still work.</li>
+<li>The metadata of your emails (sender,subject,date) will not be encrypted.</li>
+<li>Your emails will not be more secure during transit (because they are encyrpted
+after arriving at the destination). Tell your friends and colleagues to
+encrypt their mails <em>before</em> sending them.</li>
+</ul><h2>Install</h2>
+
+<h3>Dependancies</h3>
+
+<ul>
+<li>imaplib (Included in the Python Standard Library)</li>
+<li>python-gpgme <a href="https://launchpad.net/pygpgme">https://launchpad.net/pygpgme</a> (Should be available in Debian and Ubuntu repositories)</li>
+</ul><h3>Debian</h3>
+
+<pre><code># aptitude install python python-gpgme
+# mkdir -p /usr/local/lib &amp;&amp; cd /usr/local/lib
+# git clone https://github.com/n0g/arcane.git
+# cd ../bin 
+# ln -s ../lib/arcane/arcane
+# ln -s ../lib/arcane/arcane-encrypt-mail
 </code></pre>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+<p>Afterwards you should be able to call 'arcane' and 'arcane-encrypt-mail'
+and get a usage output.</p>
 
-<h3>Designer Templates</h3>
+<h2>Quick Start</h2>
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+<h3>Usage</h3>
 
-<h3>Rather Drive Stick?</h3>
+<pre><code>arcane -h hostname [-p port] [-s] -u username [-d] -k identifier
+    -h,--hostname   Hostname of IMAP4 compatible mailserver
+    -p,--port   Optional port number of IMAP4 service
+    -s,--ssl    Optional SSL flag (changes default port to 993)
+    -u,--username   Username that should be used for authentication
+    -k,--key    Public key Identifier that will be used to encrypt the mails
+    -m,--mailbox    Optional Mailbox argument which specifies which mailbox should be encrypted
+    -d,--decrypt    Optional argument for decryption (useful for key rollover)
+</code></pre>
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+<h3>Examples</h3>
 
-<h3>Authors and Contributors</h3>
+<p>Encrypt all emails on an SSL IMAP compatible mailserver for the user n0g
+with the public pgp key 77FA1F54</p>
 
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+<pre><code> ./arcane --hostname mail.example.com --ssl --username n0g --key 77FA1F54
+</code></pre>
 
-<h3>Support or Contact</h3>
+<p>Encrypt only the 'office' mailbox on an SSL IMAP compatible mailserver</p>
 
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
-        </section>
+<pre><code> ./arcane --hostname mail.example.com --ssl --mailbox office --username n0g --key 77FA1F54
+</code></pre>
 
-        <footer>
-          Arcane is maintained by <a href="https://github.com/n0g">n0g</a><br>
-          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="http://twitter.com/jasonlong">Jason Long</a>.
-        </footer>
+<p>Example .procmailrc File if you want to encrypt all incoming mails with procmail</p>
 
-        
-      </div>
+<pre><code>DEFAULT=$HOME/Maildir
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin
+
+# encryption
+:0 fw
+* &lt;300000
+| arcane-encrypt-mail --key 77FA1F54
+
+# your bunch of filter rules
+# ...
+
+# default rule
+:0
+$DEFAULT
+</code></pre>
+
+<h2>Known Issues</h2>
+
+<ul>
+<li>read/unread state is not preserved (all emails are displayed as read after using this tool)</li>
+</ul>
+      </section>
     </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Arcane maintained by <a href="https://github.com/n0g">n0g</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
   </body>
 </html>
