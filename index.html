@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Arcane : Don't let *them* read your mail. Encrypt it now." />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Arcane</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/n0g/arcane">View on GitHub</a>
+
+          <h1 id="project_title">Arcane</h1>
+          <h2 id="project_tagline">Don't let *them* read your mail. Encrypt it now.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/n0g/arcane/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/n0g/arcane/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <p>Arcane is a set of tools which allows you to encrypt all your existing
+unencrypted mails and all your new incoming mail with a GPG key so that
+only you can read them.</p>
+
+<h2>Why do I need this?</h2>
+
+<p>Many email providers store your emails for you on their servers, so
+that you can read them anywhere. This also means that your provider,
+anyone who hacks the server and the police (in case the server is
+seized) can read your private emails.</p>
+
+<p>If all your emails are GPG encrypted, only you can read them because
+only you have access to your secret GPG key.</p>
+
+<h2>What could go wrong?</h2>
+
+<ul>
+<li>If you lose your secret GPG key you can not decrypt your emails anymore.
+Your emails will be lost. Therefore make a backup of your secret GPG key (i.e. print it).</li>
+<li>After encrypting your emails you will (probably) not be able search
+the content of your emails  (because they are encrypted). Searching
+for sender or subject should still work.</li>
+<li>The metadata of your emails (sender,subject,date) will not be encrypted.</li>
+<li>Your emails will not be more secure during transit (because they are encyrpted
+after arriving at the destination). Tell your friends and colleagues to
+encrypt their mails <em>before</em> sending them.</li>
+</ul><h2>Install</h2>
+
+<h3>Dependancies</h3>
+
+<ul>
+<li>imaplib (Included in the Python Standard Library)</li>
+<li>python-gpgme <a href="https://launchpad.net/pygpgme">https://launchpad.net/pygpgme</a> (Should be available in Debian and Ubuntu repositories)</li>
+</ul><h3>Debian</h3>
+
+<pre><code># aptitude install python python-gpgme
+# mkdir -p /usr/local/lib &amp;&amp; cd /usr/local/lib
+# git clone https://github.com/n0g/arcane.git
+# cd ../bin 
+# ln -s ../lib/arcane/arcane
+# ln -s ../lib/arcane/arcane-encrypt-mail
+</code></pre>
+
+<p>Afterwards you should be able to call 'arcane' and 'arcane-encrypt-mail'
+and get a usage output.</p>
+
+<h2>Quick Start</h2>
+
+<h3>Usage</h3>
+
+<pre><code>arcane -h hostname [-p port] [-s] -u username [-d] -k identifier
+    -h,--hostname   Hostname of IMAP4 compatible mailserver
+    -p,--port   Optional port number of IMAP4 service
+    -s,--ssl    Optional SSL flag (changes default port to 993)
+    -u,--username   Username that should be used for authentication
+    -k,--key    Public key Identifier that will be used to encrypt the mails
+    -m,--mailbox    Optional Mailbox argument which specifies which mailbox should be encrypted
+    -d,--decrypt    Optional argument for decryption (useful for key rollover)
+</code></pre>
+
+<h3>Examples</h3>
+
+<p>Encrypt all emails on an SSL IMAP compatible mailserver for the user n0g
+with the public pgp key 77FA1F54</p>
+
+<pre><code> ./arcane --hostname mail.example.com --ssl --username n0g --key 77FA1F54
+</code></pre>
+
+<p>Encrypt only the 'office' mailbox on an SSL IMAP compatible mailserver</p>
+
+<pre><code> ./arcane --hostname mail.example.com --ssl --mailbox office --username n0g --key 77FA1F54
+</code></pre>
+
+<p>Example .procmailrc File if you want to encrypt all incoming mails with procmail</p>
+
+<pre><code>DEFAULT=$HOME/Maildir
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin
+
+# encryption
+:0 fw
+* &lt;300000
+| arcane-encrypt-mail --key 77FA1F54
+
+# your bunch of filter rules
+# ...
+
+# default rule
+:0
+$DEFAULT
+</code></pre>
+
+<h2>Known Issues</h2>
+
+<ul>
+<li>read/unread state is not preserved (all emails are displayed as read after using this tool)</li>
+</ul>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Arcane maintained by <a href="https://github.com/n0g">n0g</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
