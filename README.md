@@ -50,7 +50,7 @@ To generate a new GPG key the following command will guide you through
 the key generation process:
 
 
-   $ gpg --gen-key
+    $ gpg --gen-key
 
 You will need to use an RSA key for encryption (do not choose any option
 that says 'sign only'). A secure key size is 2048 bit and above, 1024
@@ -60,7 +60,7 @@ After the generation process your keypair should be visible with the
 following command:
 
 
-   $ gpg --list-secret-keys
+    $ gpg --list-secret-keys
 
 
 ### Copy Public GPG Key to Server ###
@@ -83,7 +83,7 @@ Copy the public key to your mailserver:
 Import the public key to your keyring on the mailserver:
 
 
-   $ gpg --import robin-jankins.pub
+    $ gpg --import robin-jankins.pub
 
 
 ### Create procmail Configuration ###
