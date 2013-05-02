@@ -76,7 +76,11 @@ h1, h2, h3, h4, h5, h6 {
 h1 {
   font-size: 36px;
   font-weight: 700;
-  background:url('../images/arcane-logo.png') no-repeat;
+  width: 100px;
+  height: 100px;
+  background-image: url('../images/arcane-logo.png');
+  background-size: 100px;
+  background-repeat: no-repeat;
 }
 
 h2 {
