@@ -134,16 +134,17 @@ Now you have all the details for starting arcane:
 
 
 ### Examples ###
-Encrypt all emails on an SSL IMAP compatible mailserver for the user n0g
+Encrypt all emails on an SSL IMAP compatible mailserver for the user
+robin.jankins
 with the public pgp key 77FA1F54
 
 
-     ./arcane --hostname mail.example.com --ssl --username robin.jankins --key 77FA1F54
+     arcane --hostname mail.example.com --ssl --username robin.jankins --key 77FA1F54
 
 Encrypt only the 'office' mailbox on an SSL IMAP compatible mailserver
 
 
-     ./arcane --hostname mail.example.com --ssl --mailbox office --username robin.jankins --key 77FA1F54
+     arcane --hostname mail.example.com --ssl --mailbox office --username robin.jankins --key 77FA1F54
 
 Example .procmailrc File if you want to encrypt all incoming mails with procmail
 
