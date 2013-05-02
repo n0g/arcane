@@ -22,10 +22,10 @@ h1, h2, h3 {
 
 h1 {
   font-size:28px;
-  width: 150px;
-  height: 150px;
+  width: 200px;
+  height: 200px;
   background-image: url('../images/arcane-logo.png');
-  background-size: 150px;
+  background-size: 200px;
   background-repeat: no-repeat;
 }
 
