@@ -1,36 +1,33 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-
   <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="Arcane : Don't let *them* read your mail. Encrypt it now." />
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Arcane by n0g</title>
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>Arcane</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
   </head>
-
   <body>
+    <div class="wrapper">
+      <header>
+        <h1>Arcane</h1>
+        <p>Don't let *them* read your mail. Encrypt it now.</p>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/n0g/arcane">View on GitHub</a>
+        <p class="view"><a href="https://github.com/n0g/arcane">View the Project on GitHub <small>n0g/arcane</small></a></p>
 
-          <h1 id="project_title">&nbsp;</h1>
-          <h2 id="project_tagline">Don't let *them* read your mail. Encrypt it now.</h2>
 
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/n0g/arcane/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/n0g/arcane/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
+        <ul>
+          <li><a href="https://github.com/n0g/arcane/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/n0g/arcane/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/n0g/arcane">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
         <p>Arcane is a set of tools which allows you to encrypt all your existing
 unencrypted mails and all your new incoming mail with a GPG key so that
 only you can read them.</p>
@@ -168,16 +165,15 @@ be enough to start arcane. In this example the hostname is
 
 <h3>Examples</h3>
 
-<p>Encrypt all emails on an SSL IMAP compatible mailserver for the user
-robin.jankins
+<p>Encrypt all emails on an SSL IMAP compatible mailserver for the user n0g
 with the public pgp key 77FA1F54</p>
 
-<pre><code> arcane --hostname mail.example.com --ssl --username robin.jankins --key 77FA1F54
+<pre><code> ./arcane --hostname mail.example.com --ssl --username robin.jankins --key 77FA1F54
 </code></pre>
 
 <p>Encrypt only the 'office' mailbox on an SSL IMAP compatible mailserver</p>
 
-<pre><code> arcane --hostname mail.example.com --ssl --mailbox office --username robin.jankins --key 77FA1F54
+<pre><code> ./arcane --hostname mail.example.com --ssl --mailbox office --username robin.jankins --key 77FA1F54
 </code></pre>
 
 <p>Example .procmailrc File if you want to encrypt all incoming mails with procmail</p>
@@ -205,17 +201,12 @@ $DEFAULT
 <li>read/unread state is not preserved (all emails are displayed as read after using this tool)</li>
 </ul>
       </section>
-    </div>
-
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Arcane maintained by <a href="https://github.com/n0g">n0g</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/n0g">n0g</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
       </footer>
     </div>
-
+    <script src="javascripts/scale.fix.js"></script>
     
-
   </body>
 </html>
