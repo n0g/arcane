@@ -4,7 +4,7 @@
   <head>
     <meta charset='utf-8' />
     <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="Arcane : Don't let them *read* your mail. Encrypt it now." />
+    <meta name="description" content="Arcane : Don't let *them* read your mail. Encrypt it now." />
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
@@ -19,7 +19,7 @@
           <a id="forkme_banner" href="https://github.com/n0g/arcane">View on GitHub</a>
 
           <h1 id="project_title">Arcane</h1>
-          <h2 id="project_tagline">Don't let them *read* your mail. Encrypt it now.</h2>
+          <h2 id="project_tagline">Don't let *them* read your mail. Encrypt it now.</h2>
 
             <section id="downloads">
               <a class="zip_download_link" href="https://github.com/n0g/arcane/zipball/master">Download this project as a .zip file</a>
@@ -77,6 +77,81 @@ encrypt their mails <em>before</em> sending them.</li>
 <p>Afterwards you should be able to call 'arcane' and 'arcane-encrypt-mail'
 and get a usage output.</p>
 
+<h2>Step-by-Step Configuration</h2>
+
+<h3>Generate GPG Key</h3>
+
+<p>To generate a new GPG key the following command will guide you through
+the key generation process:</p>
+
+<pre><code>$ gpg --gen-key
+</code></pre>
+
+<p>You will need to use an RSA key for encryption (do not choose any option
+that says 'sign only'). A secure key size is 2048 bit and above, 1024
+bit RSA keys are considered insecure.</p>
+
+<p>After the generation process your keypair should be visible with the
+following command:</p>
+
+<pre><code>$ gpg --list-secret-keys
+</code></pre>
+
+<h3>Copy Public GPG Key to Server</h3>
+
+<p>(If you do not want automatic encryption of incoming emails or do not
+have access to your procmail configuration, then you can skip to
+'Encrypting Existing Mails')</p>
+
+<p>Export your key into a .pub file:</p>
+
+<pre><code>$ gpg --export --armor 77FA1F54 &gt; robin-jankins.pub
+</code></pre>
+
+<p>Copy the public key to your mailserver:</p>
+
+<pre><code>$ scp robin-jankins.pub robin.jankins@mail.example.com:~/
+</code></pre>
+
+<p>Import the public key to your keyring on the mailserver:</p>
+
+<pre><code>$ gpg --import robin-jankins.pub
+</code></pre>
+
+<h3>Create procmail Configuration</h3>
+
+<p>Your procmail configuration file probably lies at '~/.procmailrc'. To
+encrypt all your incoming mail you will need to add a rule at the top:</p>
+
+<pre><code># encryption
+:0 fw
+* &lt;300000
+| arcane-encrypt-mail --key 77FA1F54
+</code></pre>
+
+<p>The 'f' tells procmail to use this rule as a filter (i.e. the filtered
+email will continue to match other rules). The 'w' tells procmail to
+continue with the unfiltered mail if arcane-encrypt-mail exits with an
+error (i.e. the mail is already encrypted).</p>
+
+<p>Note that you will either have to set the PATH variable so that the
+arcane-encrypt-mail script will be found.</p>
+
+<h3>Encrypt Existing Mails</h3>
+
+<p>Usually the hostname of your mailserver and your user credentials will
+be enough to start arcane. In this example the hostname is
+'mail.example.com', SSL needs to be used and the user is
+'robin.jankins'.</p>
+
+<p>Your GPG key identifier should be in the list you get after executing
+'gpg --list-secret-keys'.</p>
+
+<p>Now you have all the details for starting arcane:</p>
+
+<pre><code>$ arcane -h mail.example.com -s -u robin.jankins -k 77FA1F54
+</code></pre>
+
 <h2>Quick Start</h2>
 
 <h3>Usage</h3>
@@ -93,15 +168,16 @@ and get a usage output.</p>
 
 <h3>Examples</h3>
 
-<p>Encrypt all emails on an SSL IMAP compatible mailserver for the user n0g
+<p>Encrypt all emails on an SSL IMAP compatible mailserver for the user
+robin.jankins
 with the public pgp key 77FA1F54</p>
 
-<pre><code> ./arcane --hostname mail.example.com --ssl --username n0g --key 77FA1F54
+<pre><code> arcane --hostname mail.example.com --ssl --username robin.jankins --key 77FA1F54
 </code></pre>
 
 <p>Encrypt only the 'office' mailbox on an SSL IMAP compatible mailserver</p>
 
-<pre><code> ./arcane --hostname mail.example.com --ssl --mailbox office --username n0g --key 77FA1F54
+<pre><code> arcane --hostname mail.example.com --ssl --mailbox office --username robin.jankins --key 77FA1F54
 </code></pre>
 
 <p>Example .procmailrc File if you want to encrypt all incoming mails with procmail</p>
