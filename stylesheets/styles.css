@@ -24,7 +24,7 @@ h1 {
   font-size:28px;
   width: 150px;
   height: 150px;
-  background-image: url('../images/arcane-logo.png);
+  background-image: url('../images/arcane-logo.png');
   background-size: 150px;
   background-repeat: no-repeat;
 }
