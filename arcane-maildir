@@ -48,9 +48,13 @@ def main(argv=None):
 		argv = sys.argv
 
 	# Initial Arguments
+	global key
+	global decrypt
+	global gpg_passphrase
 	key = ""
-	maildir = ""
 	decrypt = False
+	gpg_passphrase = ""
+	maildir = ""
 
 	# parse arguments
 	try:
@@ -87,25 +91,31 @@ def main(argv=None):
 
 	# iterate over all mails and encrypt or decrypt them
 	src_mbox = mailbox.Maildir(maildir, factory=mailbox.MaildirMessage) 
-	for mail_key,mail in src_mbox.items():
-		# TODO: check if subfolders are maildirs
 
+	print "Root Maildir:"
+	handle_maildir(src_mbox)
+	for subdir in src_mbox.list_folders():
+		print subdir + ":"
+		handle_maildir(src_mbox.get_folder(subdir))
+
+def handle_maildir(maildir):
+	for mail_key,mail in maildir.items():
 		if decrypt == False:
 			if not is_encrypted(mail):
 				mail = GPGEncryption().encryptPGP(mail, key)
-				src_mbox[mail_key] = mail
+				maildir[mail_key] = mail
 				sys.stdout.write('.')
 			else:
 				sys.stdout.write('X')
 		else:
 			if is_encrypted(mail):
-				mail = GPGDecryption().decryptPGP(mail, key, gpg_passphrase)
-				src_mbox[mail_key] = mail
+				mail = GPGDecryption().decryptPGP(mail, key,gpg_passphrase)
+				maildir[mail_key] = mail
 				sys.stdout.write('.')
 			else:
 				sys.stdout.write('X')
 		sys.stdout.flush()
-		print "\n"
+	print "\n"
 
 def usage():
 	print >> sys.stderr, "Usage: arcane-maildir [-m maildir] [-d] -k identifier"
