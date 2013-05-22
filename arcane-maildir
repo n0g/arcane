@@ -1,0 +1,119 @@
+#! /usr/bin/env python
+"""arcane-maildir
+
+This tool iterates over all emails in a local maildir and encrypts all
+unencrypted mail.
+
+The MIT License (MIT)
+
+Copyright (c) 2013 Matthias Fassl <mf@n0g.at>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+"""
+
+import re
+import os
+import sys
+import getopt
+import getpass
+import email
+import mailbox
+
+from util import Util
+from gpg import GPGDecryption
+from gpg import GPGEncryption
+
+def is_encrypted(mail):
+	return mail.get_content_type() == "multipart/encrypted"
+
+def main(argv=None):
+	if argv==None:
+		argv = sys.argv
+
+	# Initial Arguments
+	key = ""
+	maildir = ""
+	decrypt = False
+
+	# parse arguments
+	try:
+		optlist, args = getopt.getopt(sys.argv[1:],"k:m:d",["key=","maildir=","decrypt"])
+	except getopt.GetoptError as err:
+		usage()
+		return 2
+
+
+	for o, a in optlist:
+		if o in ("-k","--key"):
+			key = a
+		elif o in ("-m","--maildir"):
+			maildir = a
+		elif o in ("-d","--decrypt"):
+			decrypt = True
+		else:
+			usage()
+			return 1
+
+	if key == "":
+		print >> sys.stderr,"Encryption not possible without key identifier\n"
+		usage()
+		return 1
+
+	if maildir == "":
+		print >> sys.stderr,"Don't know where the Maildir is\n"
+		usage()
+		return 1
+		
+	# fetch passwords from user
+	if decrypt == True:
+		gpg_passphrase = getpass.getpass("GPG Passphrase: ")
+
+	# iterate over all mails and encrypt or decrypt them
+	src_mbox = mailbox.Maildir(maildir, factory=mailbox.MaildirMessage) 
+	for mail_item in src_mbox.items():
+		mail = mail_item[1]
+		# TODO: check if subfolders are maildirs
+
+		if decrypt == False:
+			if not is_encrypted(mail):
+				mail = GPGEncryption().encryptPGP(mail, key)
+				src_mbox[mail_item[0]] = mail
+				sys.stdout.write('.')
+			else:
+				sys.stdout.write('X')
+		else:
+			if is_encrypted(mail):
+				mail = GPGDecryption().decryptPGP(mail, key, gpg_passphrase)
+				src_mbox[mail_item[0]] = mail
+				sys.stdout.write('.')
+			else:
+				sys.stdout.write('X')
+		sys.stdout.flush()
+		print "\n"
+
+def usage():
+	print >> sys.stderr, "Usage: arcane-maildir [-m maildir] [-d] -k identifier"
+	print >> sys.stderr, "\t-k,--key\tPublic key Identifier that will be used to encrypt the mails"
+	print >> sys.stderr, "\t-m,--maildir\tSpecifies where Maildir is encrypted"
+	print >> sys.stderr, "\t-d,--decrypt\tOptional argument for decryption (useful for key rollover)"
+	
+
+if __name__  == "__main__":
+	sys.exit(main())
