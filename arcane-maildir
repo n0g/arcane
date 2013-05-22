@@ -87,21 +87,20 @@ def main(argv=None):
 
 	# iterate over all mails and encrypt or decrypt them
 	src_mbox = mailbox.Maildir(maildir, factory=mailbox.MaildirMessage) 
-	for mail_item in src_mbox.items():
-		mail = mail_item[1]
+	for mail_key,mail in src_mbox.items():
 		# TODO: check if subfolders are maildirs
 
 		if decrypt == False:
 			if not is_encrypted(mail):
 				mail = GPGEncryption().encryptPGP(mail, key)
-				src_mbox[mail_item[0]] = mail
+				src_mbox[mail_key] = mail
 				sys.stdout.write('.')
 			else:
 				sys.stdout.write('X')
 		else:
 			if is_encrypted(mail):
 				mail = GPGDecryption().decryptPGP(mail, key, gpg_passphrase)
-				src_mbox[mail_item[0]] = mail
+				src_mbox[mail_key] = mail
 				sys.stdout.write('.')
 			else:
 				sys.stdout.write('X')
