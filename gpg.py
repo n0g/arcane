@@ -55,7 +55,7 @@ class GPGEncryption:
 				sys.exit(1)
 		# encrypt data
 		try:
-			octx.encrypt(recipients, gpgme.ENCRYPT_ALWAYS_TRUST, plaintext, ciphertext)
+			ctx.encrypt(recipients, gpgme.ENCRYPT_ALWAYS_TRUST, plaintext, ciphertext)
 		except:
 			print >> sys.stderr, "Encryption failed."
 			sys.exit(1)
