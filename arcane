@@ -116,7 +116,7 @@ def main(argv=None):
 		for mail in mbox:
 			if decrypt == False:
 				if not mail.isEncrypted():
-					mail.mail = GPGEncryption().encryptPGP(mail.mail,key)
+					mail.mail = GPGEncryption().encryptPGP(mail.mail,[key])
 					mail.store()
 					sys.stdout.write('.')
 				else:

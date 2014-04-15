@@ -102,7 +102,7 @@ def handle_maildir(maildir):
 	for mail_key,mail in maildir.items():
 		if decrypt == False:
 			if not is_encrypted(mail):
-				mail = GPGEncryption().encryptPGP(mail, key)
+				mail = GPGEncryption().encryptPGP(mail, [key])
 				maildir[mail_key] = mail
 				sys.stdout.write('.')
 			else:

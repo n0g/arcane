@@ -34,22 +34,30 @@ from email.mime.base import MIMEBase
 from email.mime.application import MIMEApplication
 
 class GPGEncryption:
-	def encryptPGP(self,mail,key):
+	def encryptPGP(self,mail,keys):
 		# initialize variables for encryption
 		plaintext = BytesIO(self._extractMIMEPayload(mail))
 		ciphertext = BytesIO()
 		ctx = gpgme.Context()
 		ctx.armor = True
-		# find public key
-		try:
-			recipient = ctx.get_key(key)
-		except:
-			print >> sys.stderr, "Couldn't find GPG Key"
-			sys.exit(1)
+		recipients = list()
+
+		# find public keys
+		for key in keys:
+			try:
+				recipients.append(ctx.get_key(key))
+			except:
+				print >> sys.stderr, "Couldn't find GPG Key"
+				sys.exit(1)
 		# encrypt data
-		ctx.encrypt([recipient], gpgme.ENCRYPT_ALWAYS_TRUST, plaintext, ciphertext)
-		ciphertext.seek(0)
+		try:
+			octx.encrypt(recipients, gpgme.ENCRYPT_ALWAYS_TRUST, plaintext, ciphertext)
+		except:
+			print >> sys.stderr, "Encryption failed."
+			sys.exit(1)
+
 		# package encrypted data in valid PGP/MIME
+		ciphertext.seek(0)
 		return self._generatePGPMIME(mail,ciphertext.getvalue())
 
 	def _extractMIMEPayload(self,mail):

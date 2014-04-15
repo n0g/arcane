@@ -72,7 +72,7 @@ def main(argv=None):
 		return 1
 
 	# encrypt mail
-	email_encrypted = GPGEncryption().encryptPGP(email_obj,key)
+	email_encrypted = GPGEncryption().encryptPGP(email_obj,[key])
 
 	# print mail
 	print Util.flattenMessage(email_encrypted)
