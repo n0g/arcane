@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 """
 import sys
-import getopt
+import argparse
 import getpass
 import imap
 from util import Util
@@ -40,107 +40,57 @@ DEFAULT_SSL_PORT = 993
 DEFAULT_PORT = 143
 
 def main(argv=None):
-	if argv==None:
-		argv = sys.argv
-
-	# Initial Arguments
-	port = 0
-	hostname = ""
-	username = ""
-	key = ""
-	mailbox = ""
-	decrypt = False
-	ssl = False
-
-	# parse arguments
-	try:
-		optlist, args = getopt.getopt(sys.argv[1:],"h:p:su:k:m:d",["hostname=", "port=","ssl","username=","key=","mailbox=","decrypt"])
-	except getopt.GetoptError as err:
-		usage()
-		return 2
-
-
-	for o, a in optlist:
-		if o in ("-h","--hostname"):
-			hostname = a
-		elif o in ("-p","--port"): 
-			port = int(a)
-		elif o in ("-s","--ssl"):
-			ssl = True
-		elif o in ("-u","--username"):
-			username = a
-		elif o in ("-k","--key"):
-			key = a
-		elif o in ("-m","--mailbox"):
-			mailbox = a
-		elif o in ("-d","--decrypt"):
-			decrypt = True
+	parser = argparse.ArgumentParser(description="Connect to your mailbox (via imap) and encrypt all your mails with PGP")
+	parser.add_argument('-a','--address',help="Address of IMAP4 compatible mailserver",required=True)
+	parser.add_argument('-p','--port',help="Optional port number of IMAP4 service",type=int)
+	parser.add_argument('-s','--ssl',help="Optional SSL flag (changes default port to 993)",action='store_true')
+	parser.add_argument('-m','--mailbox',help="Optional Mailbox that specifies which Mailbox should be encrypted")
+	parser.add_argument('-u','--username',help="Username that should be used for authentication",required=True)
+	parser.add_argument('-d','--decrypt',help="Optional argument for decryption (useful for key rollover)",action='store_true')
+	parser.add_argument('-k','--key',help="Public key Identifier that will be used to encrypt the mails",required=True,nargs='+')
+	ns = parser.parse_args()
+	
+	# choose correct port
+	if not ns.port:
+		if ns.ssl:
+			ns.port = DEFAULT_SSL_PORT
 		else:
-			usage()
-			return 1
+			ns.port = DEFAULT_PORT
 
-	if port == 0:
-		if ssl == True:
-			port = DEFAULT_SSL_PORT
-		else:
-			port = DEFAULT_PORT
+	# check number of key arguments
+	if ns.decrypt and len(key) > 1:
+		print sys.stderr, "Warning: Only the first given PGP key will be used for decryption"
 
-	if hostname == "":
-		print >> sys.stderr,"Connection not possible without hostname\n"
-		usage()
-		return 1
-
-	if username == "":
-		print >> sys.stderr,"Authentication not possible without username\n"
-		usage()
-		return 1
-
-	if key == "":
-		print >> sys.stderr,"Encryption not possible without key identifier\n"
-		usage()
-		return 1
-		
 	# fetch passwords from user
 	imap_password = getpass.getpass("IMAP4 Password: ")
-	if decrypt == True:
+	if ns.decrypt:
 		gpg_passphrase = getpass.getpass("GPG Passphrase: ")
 
 	# open connection
-	conn = imap.IMAPConnection(hostname,port,ssl,username,imap_password)
+	conn = imap.IMAPConnection(ns.address,ns.port,ns.ssl,ns.username,imap_password)
 
 	# iterate over all mails and encrypt or decrypt them
 	for mbox in conn:
-		if mailbox != "" and not mailbox in mbox.mailbox:
+		if ns.mailbox and not ns.mailbox in mbox.mailbox:
 			continue
 		print mbox
 		for mail in mbox:
-			if decrypt == False:
+			if not ns.decrypt:
 				if not mail.isEncrypted():
-					mail.mail = GPGEncryption().encryptPGP(mail.mail,[key])
+					mail.mail = GPGEncryption().encryptPGP(mail.mail,ns.key)
 					mail.store()
 					sys.stdout.write('.')
 				else:
 					sys.stdout.write('X')
 			else:
 				if mail.isEncrypted():
-					mail.mail = GPGDecryption().decryptPGP(mail.mail,key,gpg_passphrase)
+					mail.mail = GPGDecryption().decryptPGP(mail.mail,ns.key[0],gpg_passphrase)
 					mail.store()
 					sys.stdout.write('.')
 				else:
 					sys.stdout.write('X')
 			sys.stdout.flush()
 		print "\n"
-
-def usage():
-	print >> sys.stderr, "Usage: arcane -h hostname [-p port] [-s] [-m mailbox] -u username [-d] -k identifier"
-	print >> sys.stderr, "\t-h,--hostname\tHostname of IMAP4 compatible mailserver"
-	print >> sys.stderr, "\t-p,--port\tOptional port number of IMAP4 service"
-	print >> sys.stderr, "\t-s,--ssl\tOptional SSL flag (changes default port to 993)"
-	print >> sys.stderr, "\t-u,--username\tUsername that should be used for authentication"
-	print >> sys.stderr, "\t-k,--key\tPublic key Identifier that will be used to encrypt the mails"
-	print >> sys.stderr, "\t-m,--mailbox\tOptional Mailbox that specifies which Mailbox should be encrypted"
-	print >> sys.stderr, "\t-d,--decrypt\tOptional argument for decryption (useful for key rollover)"
-	
 
 if __name__  == "__main__":
 	sys.exit(main())
