@@ -31,7 +31,7 @@ THE SOFTWARE.
 import re
 import os
 import sys
-import getopt
+import argparse
 import getpass
 import email
 import mailbox
@@ -44,85 +44,47 @@ def is_encrypted(mail):
 	return mail.get_content_type() == "multipart/encrypted"
 
 def main(argv=None):
-	if argv==None:
-		argv = sys.argv
+	parser = argparse.ArgumentParser(description="Encrypt all mails in a maildir")
+	parser.add_argument('-k','--key',help="Public key Identifier that will be used to encrypt the mails",required=True,nargs='+')
+	parser.add_argument('-m','--maildir',help="Specifies the location of Maildir to encrypt",required=True)
+	parser.add_argument('-d','--decrypt',help="Optional argument for decryption (useful for key rollover)",action="store_true")
+	ns = parser.parse_args()
 
-	# Initial Arguments
-	global key
-	global decrypt
-	global gpg_passphrase
-	key = ""
-	decrypt = False
-	gpg_passphrase = ""
-	maildir = ""
+	# check number of keys
+	if ns.decrypt and len(ns.key) > 1:
+		print sys.stderr, "Warning: Only the first key will be used for decryption"
 
-	# parse arguments
-	try:
-		optlist, args = getopt.getopt(sys.argv[1:],"k:m:d",["key=","maildir=","decrypt"])
-	except getopt.GetoptError as err:
-		usage()
-		return 2
-
-
-	for o, a in optlist:
-		if o in ("-k","--key"):
-			key = a
-		elif o in ("-m","--maildir"):
-			maildir = a
-		elif o in ("-d","--decrypt"):
-			decrypt = True
-		else:
-			usage()
-			return 1
-
-	if key == "":
-		print >> sys.stderr,"Encryption not possible without key identifier\n"
-		usage()
-		return 1
-
-	if maildir == "":
-		print >> sys.stderr,"Don't know where the Maildir is\n"
-		usage()
-		return 1
-		
 	# fetch passwords from user
-	if decrypt == True:
-		gpg_passphrase = getpass.getpass("GPG Passphrase: ")
+	if ns.decrypt:
+		ns.gpg_passphrase = getpass.getpass("GPG Passphrase: ")
 
 	# iterate over all mails and encrypt or decrypt them
 	src_mbox = mailbox.Maildir(maildir, factory=mailbox.MaildirMessage) 
 
 	print "Root Maildir:"
-	handle_maildir(src_mbox)
+	handle_maildir(ns,src_mbox)
 	for subdir in src_mbox.list_folders():
 		print subdir + ":"
-		handle_maildir(src_mbox.get_folder(subdir))
+		handle_maildir(ns,src_mbox.get_folder(subdir))
 
-def handle_maildir(maildir):
+def handle_maildir(crypto_ns,maildir):
 	for mail_key,mail in maildir.items():
-		if decrypt == False:
+		if not crypto_ns.decrypt:
 			if not is_encrypted(mail):
-				mail = GPGEncryption().encryptPGP(mail, [key])
+				mail = GPGEncryption().encryptPGP(mail, crypto_ns.key)
 				maildir[mail_key] = mail
 				sys.stdout.write('.')
 			else:
 				sys.stdout.write('X')
 		else:
 			if is_encrypted(mail):
-				mail = GPGDecryption().decryptPGP(mail, key,gpg_passphrase)
+				mail = GPGDecryption().decryptPGP(mail,crypto_ns.key[0],crypto_ns.gpg_passphrase)
 				maildir[mail_key] = mail
 				sys.stdout.write('.')
 			else:
 				sys.stdout.write('X')
 		sys.stdout.flush()
 	print "\n"
-
-def usage():
-	print >> sys.stderr, "Usage: arcane-maildir [-m maildir] [-d] -k identifier"
-	print >> sys.stderr, "\t-k,--key\tPublic key Identifier that will be used to encrypt the mails"
-	print >> sys.stderr, "\t-m,--maildir\tSpecifies where Maildir is encrypted"
-	print >> sys.stderr, "\t-d,--decrypt\tOptional argument for decryption (useful for key rollover)"
-	
 
 if __name__  == "__main__":
 	sys.exit(main())
