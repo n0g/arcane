@@ -27,11 +27,15 @@ import sys
 import types
 from util import Util
 from io import BytesIO
-import gpgme
 import email
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email.mime.application import MIMEApplication
+try:
+	import gpgme
+except ImportError:
+	print >> sys.stderr, "Please install python library 'gpgme'"
+	sys.exit(1)
 
 class GPGEncryption:
 	def encryptPGP(self,mail,keys):
