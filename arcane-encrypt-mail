@@ -31,35 +31,16 @@ THE SOFTWARE.
 """
 
 import sys
-import getopt
+import argparse
 import email
 from util import Util
 from gpg import GPGDecryption
 from gpg import GPGEncryption
 
 def main(argv=None):
-	if argv==None:
-		argv = sys.argv
-
-	# parse option
-	key = ""
-	try:
-		optlist, args = getopt.getopt(sys.argv[1:],"k:",["key="])
-	except getopt.GetoptError as err:
-		usage()
-		return 2
-
-	for o, a in optlist:
-		if o in ("-k","--key"):
-			key = a
-		else:
-			usage()
-			return 1
-	
-	if key == "":
-		print >> sys.stderr, "Encryption not possible without key identifier\n"
-		usage()
-		return 1
+	parser = argparse.ArgumentParser(description='Encrypt Mail (that will be read from stdin) with PGP Keys')
+	parser.add_argument('-k','--key',nargs='+',required=True,help="key identifiers of the keys that should be used for encryption")
+	ns = parser.parse_args()
 
 	# read email from stdin
 	email_lines = sys.stdin.readlines()
@@ -72,14 +53,10 @@ def main(argv=None):
 		return 1
 
 	# encrypt mail
-	email_encrypted = GPGEncryption().encryptPGP(email_obj,[key])
+	email_encrypted = GPGEncryption().encryptPGP(email_obj,ns.key)
 
 	# print mail
 	print Util.flattenMessage(email_encrypted)
 
-def usage():
-	print >> sys.stderr, "Usage: arcane-encrypt-mail -k Key-Identifier"
-	print >> sys.stderr, "\t-k,--key\tIdentifier of the public GPG key that will be used to encrypt the E-Mail"
-	
 if __name__  == "__main__":
 	sys.exit(main())
