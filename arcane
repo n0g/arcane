@@ -58,7 +58,7 @@ def main(argv=None):
 			ns.port = DEFAULT_PORT
 
 	# check number of key arguments
-	if ns.decrypt and len(key) > 1:
+	if ns.decrypt and len(ns.key) > 1:
 		print sys.stderr, "Warning: Only the first given PGP key will be used for decryption"
 
 	# fetch passwords from user
