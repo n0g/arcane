@@ -59,7 +59,7 @@ def main(argv=None):
 		ns.gpg_passphrase = getpass.getpass("GPG Passphrase: ")
 
 	# iterate over all mails and encrypt or decrypt them
-	src_mbox = mailbox.Maildir(maildir, factory=mailbox.MaildirMessage) 
+	src_mbox = mailbox.Maildir(ns.maildir, factory=mailbox.MaildirMessage) 
 
 	print "Root Maildir:"
 	handle_maildir(ns,src_mbox)
