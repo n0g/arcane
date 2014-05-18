@@ -146,7 +146,7 @@ class GPGDecryption:
 		for msg in submessages:
 			if msg.get_content_subtype() == "pgp-encrypted":
 				# check version information
-				if not msg.get_payload() == "Version: 1":
+				if not "Version: 1" in msg.get_payload():
 					print >> sys.stderr, "Couldn't decrypt message, wrong  PGP Version information"
 					return
 			if msg.get_content_subtype() == "octet-stream":
