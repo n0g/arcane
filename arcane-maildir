@@ -73,9 +73,9 @@ def handle_maildir(crypto_ns,maildir):
 			if not is_encrypted(mail):
 				mail = GPGEncryption().encryptPGP(mail, crypto_ns.key)
 				maildir[mail_key] = mail
-				sys.stdout.write('.')
+				sys.stdout.write('#')
 			else:
-				sys.stdout.write('X')
+				sys.stdout.write('x')
 		else:
 			if is_encrypted(mail):
 				mail = GPGDecryption().decryptPGP(mail,crypto_ns.key[0],crypto_ns.gpg_passphrase)
