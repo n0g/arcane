@@ -67,15 +67,22 @@ def main(argv=None):
 		print subdir + ":"
 		handle_maildir(ns,src_mbox.get_folder(subdir))
 
+	# Subdir names might not start with a dot which is expected by list_folders()
+	for subdir in os.listdir(ns.maildir):
+		if os.path.isdir(os.path.join(ns.maildir, subdir)) and subdir != 'new' and subdir != 'cur' and subdir != 'tmp':
+			print subdir + ":"
+			handle_maildir(ns,mailbox.Maildir(os.path.join(ns.maildir, subdir), factory=mailbox.MaildirMessage))
+
 def handle_maildir(crypto_ns,maildir):
 	for mail_key,mail in maildir.items():
+		#print mail_key
 		if not crypto_ns.decrypt:
 			if not is_encrypted(mail):
 				mail = GPGEncryption().encryptPGP(mail, crypto_ns.key)
 				maildir[mail_key] = mail
-				sys.stdout.write('.')
+				sys.stdout.write('#')
 			else:
-				sys.stdout.write('X')
+				sys.stdout.write('x')
 		else:
 			if is_encrypted(mail):
 				mail = GPGDecryption().decryptPGP(mail,crypto_ns.key[0],crypto_ns.gpg_passphrase)
