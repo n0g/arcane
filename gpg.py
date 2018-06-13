@@ -32,9 +32,9 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email.mime.application import MIMEApplication
 try:
-	import gpgme
+	import gpg
 except ImportError:
-	print >> sys.stderr, "Please install python library 'gpgme'"
+	print >> sys.stderr, "Please install python library 'python-gpg'"
 	sys.exit(1)
 
 class GPGEncryption:
